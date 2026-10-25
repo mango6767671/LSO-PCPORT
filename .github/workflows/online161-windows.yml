@@ -1,0 +1,21 @@
+name: ONLINE161 Windows DLL
+
+on:
+  push:
+    paths:
+      - "client/online161/**"
+      - ".github/workflows/online161-windows.yml"
+  pull_request:
+    paths:
+      - "client/online161/**"
+      - ".github/workflows/online161-windows.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure x64
+        run: cmake -S client/online161 -B build/online161 -A x64
+      - name: Build Release DLL
+        run: cmake --build build/online161 --config Release
