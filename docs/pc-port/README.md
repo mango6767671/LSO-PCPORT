@@ -40,6 +40,21 @@ curl http://localhost/api/pc/v1/status
 The status response should include \`"accountApi":"enabled"\` and \`"sessionDirectory":"enabled"\`.
 It intentionally reports transport and GTA V 1.61 compatibility as not implemented/unverified.
 
+## End-to-end API smoke test
+
+After starting the stack and confirming the health check, run this from PowerShell in
+the repository root:
+
+```powershell
+.\examples\pc-port-smoke-test.ps1
+```
+
+The script creates uniquely named temporary accounts, creates a test-only session,
+checks discovery and join/leave counts, verifies a heartbeat, and revokes the tokens.
+It does not touch the legacy LSO accounts. Use it against a local or private test
+deployment only. A passing result validates these backend routes, not GTA V 1.61
+client compatibility or in-game networking.
+
 ## API
 
 All protected routes use \`Authorization: Bearer <token>\`. The independent token is not a
