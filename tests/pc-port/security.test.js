@@ -25,7 +25,8 @@ test("validates display names without accepting markup", () => {
 test("enforces bounded password lengths", () => {
   assert.equal(passwordIsValid("a-secure-password"), true);
   assert.equal(passwordIsValid("short"), false);
-  assert.equal(passwordIsValid("x".repeat(129)), false);
+  assert.equal(passwordIsValid("x".repeat(73)), false);
+  assert.equal(passwordIsValid("🔐".repeat(19)), false);
   assert.equal(passwordIsValid(null), false);
 });
 
