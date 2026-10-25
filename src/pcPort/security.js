@@ -17,7 +17,7 @@ export function normalizeDisplayName(value) {
 }
 
 export function passwordIsValid(value) {
-  return typeof value === "string" && value.length >= 10 && value.length <= 128;
+  return typeof value === "string" && value.length >= 10 && Buffer.byteLength(value, "utf8") <= 72;
 }
 
 export function hashOpaqueToken(value) {
