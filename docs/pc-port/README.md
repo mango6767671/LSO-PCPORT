@@ -6,7 +6,7 @@ authentication semantics.
 
 ## What is implemented in this fork
 
-- Independent account registration and login, with bcrypt password hashes.
+- Independent account registration and login, with bcrypt password hashes (10-character minimum; bcrypt’s 72-byte input ceiling is enforced).
 - Random opaque bearer tokens; only SHA-256 token hashes are stored in PostgreSQL.
 - Token expiry and explicit logout/revocation.
 - A session directory with public/private listings, hashed private join codes, host
