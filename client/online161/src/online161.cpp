@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 #include <mutex>
-#include <algorithm>
+#include <cstring>
+#include <cstdio>
 
 #pragma comment(lib, "winhttp.lib")
 
@@ -28,22 +29,21 @@ std::string jsonEscape(const std::string& value) {
   for (unsigned char c : value) {
     switch (c) {
       case '"': out += "\\\""; break;
-      case '\\\\': out += "\\\\\\\\"; break;
-      case '\\b': out += "\\\\b"; break;
-      case '\\f': out += "\\\\f"; break;
-      case '\\n': out += "\\\\n"; break;
-      case '\\r': out += "\\\\r"; break;
-      case '\\t': out += "\\\\t"; break;
+      case '\\': out += "\\\\"; break;
+      case '\b': out += "\\b"; break;
+      case '\f': out += "\\f"; break;
+      case '\n': out += "\\n"; break;
+      case '\r': out += "\\r"; break;
+      case '\t': out += "\\t"; break;
       default:
-        if (c < 0x20) {
-          char buf[7]; sprintf_s(buf, "\\u%04x", c); out += buf;
-        } else out += (char)c;
+        if (c < 0x20) { char buf[7]; sprintf_s(buf, "\\u%04x", c); out += buf; }
+        else out += (char)c;
     }
   }
   return out;
 }
 std::string jsonString(const std::string& json, const std::string& key) {
-  const std::string needle = "\\"" + key + "\\"";
+  const std::string needle = "\"" + key + "\"";
   size_t p = json.find(needle);
   if (p == std::string::npos) return {};
   p = json.find(':', p + needle.size());
@@ -54,15 +54,15 @@ std::string jsonString(const std::string& json, const std::string& key) {
   for (++p; p < json.size(); ++p) {
     char c = json[p];
     if (c == '"') return out;
-    if (c == '\\\\' && p + 1 < json.size()) {
+    if (c == '\\' && p + 1 < json.size()) {
       char e = json[++p];
       switch (e) {
         case '"': out += '"'; break;
-        case '\\\\': out += '\\\\'; break;
+        case '\\': out += '\\'; break;
         case '/': out += '/'; break;
-        case 'n': out += '\\n'; break;
-        case 'r': out += '\\r'; break;
-        case 't': out += '\\t'; break;
+        case 'n': out += '\n'; break;
+        case 'r': out += '\r'; break;
+        case 't': out += '\t'; break;
         default: return {};
       }
     } else out += c;
@@ -91,8 +91,8 @@ O161_Result request(const wchar_t* method, const std::wstring& endpoint, const s
   DWORD flags = secure ? WINHTTP_FLAG_SECURE : 0;
   HINTERNET req = WinHttpOpenRequest(connection, method, path.c_str(), nullptr, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, flags);
   if (!req) { g_error = "WinHttpOpenRequest failed."; WinHttpCloseHandle(connection); WinHttpCloseHandle(session); return O161_NETWORK_ERROR; }
-  std::wstring headers = L"Content-Type: application/json\\r\\nAccept: application/json\\r\\n";
-  if (auth && !g_token.empty()) headers += L"Authorization: Bearer " + widen(g_token) + L"\\r\\n";
+  std::wstring headers = L"Content-Type: application/json\r\nAccept: application/json\r\n";
+  if (auth && !g_token.empty()) headers += L"Authorization: Bearer " + widen(g_token) + L"\r\n";
   BOOL ok = WinHttpSendRequest(req, headers.c_str(), (DWORD)-1, body.empty() ? WINHTTP_NO_REQUEST_DATA : (LPVOID)body.data(), (DWORD)body.size(), (DWORD)body.size(), 0);
   if (ok) ok = WinHttpReceiveResponse(req, nullptr);
   if (!ok) {
@@ -138,7 +138,6 @@ O161_Result copyResponse(const std::string& response, char** output) {
   return O161_OK;
 }
 }
-
 extern "C" O161_Result O161_CALL O161_Initialize(const wchar_t* server_url) {
   std::lock_guard<std::mutex> lock(g_mutex);
   if (!server_url || !*server_url) return O161_INVALID_ARGUMENT;
@@ -152,12 +151,12 @@ extern "C" O161_Result O161_CALL O161_Initialize(const wchar_t* server_url) {
 extern "C" O161_Result O161_CALL O161_Register(const char* email, const char* display_name, const char* password) {
   std::lock_guard<std::mutex> lock(g_mutex);
   if (!email || !display_name || !password || g_server.empty()) return O161_INVALID_ARGUMENT;
-  return authPost("/auth/register", "{\\"email\\":\\""+jsonEscape(email)+"\\",\\"displayName\\":\\""+jsonEscape(display_name)+"\\",\\"password\\":\\""+jsonEscape(password)+"\\"}");
+  return authPost("/auth/register", "{\"email\":\""+jsonEscape(email)+"\",\"displayName\":\""+jsonEscape(display_name)+"\",\"password\":\""+jsonEscape(password)+"\"}");
 }
 extern "C" O161_Result O161_CALL O161_Login(const char* email, const char* password) {
   std::lock_guard<std::mutex> lock(g_mutex);
   if (!email || !password || g_server.empty()) return O161_INVALID_ARGUMENT;
-  return authPost("/auth/login", "{\\"email\\":\\""+jsonEscape(email)+"\\",\\"password\\":\\""+jsonEscape(password)+"\\"}");
+  return authPost("/auth/login", "{\"email\":\""+jsonEscape(email)+"\",\"password\":\""+jsonEscape(password)+"\"}");
 }
 extern "C" O161_Result O161_CALL O161_GetProfile(char** response_json) {
   std::lock_guard<std::mutex> lock(g_mutex);
