@@ -131,7 +131,7 @@ export function createPcPortRouter(prisma) {
     if (!email) throw apiError(400, "invalid_email");
     if (!displayName) throw apiError(400, "invalid_display_name");
     if (!passwordIsValid(password)) {
-      throw apiError(400, "invalid_password", "Password must be 10–128 characters.");
+      throw apiError(400, "invalid_password", "Password must be at least 10 characters and no more than 72 UTF-8 bytes.");
     }
 
     try {
