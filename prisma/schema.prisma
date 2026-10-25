@@ -528,3 +528,69 @@ model ClanWallMessage {
   @@index([writerId])
   @@index([createdAt])
 }
+
+
+/// Accounts used only by the independent PC-port API. They are deliberately separate
+/// from the legacy ROS-shaped account and ticket records above.
+model PcPortAccount {
+  id                    String                @id @default(cuid())
+  email                 String                @unique
+  displayName           String
+  displayNameNormalized String                @unique
+  passwordHash          String
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  authSessions          PcPortAuthSession[]
+  ownedSessions         PcPortGameSession[]   @relation("PcPortSessionOwner")
+  memberships           PcPortSessionMember[]
+
+  @@index([createdAt])
+}
+
+model PcPortAuthSession {
+  id        String        @id @default(cuid())
+  accountId String
+  tokenHash String        @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime      @default(now())
+  account   PcPortAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, expiresAt])
+  @@index([expiresAt])
+}
+
+model PcPortGameSession {
+  id           String                @id @default(cuid())
+  ownerId      String
+  label        String
+  gameVersion  String
+  region       String                @default("auto")
+  maxPlayers   Int
+  activePlayers Int                  @default(1)
+  isPrivate    Boolean               @default(false)
+  joinCodeHash String?
+  heartbeatAt  DateTime              @default(now())
+  expiresAt    DateTime
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  owner        PcPortAccount         @relation("PcPortSessionOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members      PcPortSessionMember[]
+
+  @@index([expiresAt])
+  @@index([ownerId])
+  @@index([gameVersion, region, isPrivate, expiresAt])
+}
+
+model PcPortSessionMember {
+  id        String           @id @default(cuid())
+  sessionId String
+  accountId String
+  joinedAt  DateTime         @default(now())
+  lastSeenAt DateTime        @default(now())
+  session   PcPortGameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  account   PcPortAccount    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, accountId])
+  @@index([accountId])
+}
