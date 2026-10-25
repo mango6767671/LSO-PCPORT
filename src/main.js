@@ -63,6 +63,7 @@ import { verifyPS4Login } from "./endpoints/auth/PS4/verifyPS4Login.js";
 import { queryContentHandler } from "./endpoints/ugc/QueryContent.js";
 import { getFriendsListHandler } from "./endpoints/PSN/friendslist.js";
 import { matchmakingService } from './services/matchmakingService.js';
+import { createPcPortRouter } from "./pcPort/router.js";
 import { advertiseHandler } from "./endpoints/matchmaking/advertise.js";
 import { updateHandler } from "./endpoints/matchmaking/update.js";
 import { findHandler } from "./endpoints/matchmaking/find.js";
@@ -848,6 +849,9 @@ app.use("/gta5/11/gameservices/socialclub.asmx", SocialClubRouter);
 app.use("/gta5/11/gameservices/telemetry.asmx", TelemetryRouter);
 app.use("/gta5/11/gameservices/ugc.asmx", UGCRouter);
 app.use('/gta5/11/gameservices/SaveMigrationSingleplayer.asmx', SingleplayerSaveMigrationRouter);
+
+// Independent PC-port API; intentionally separate from legacy ROS-shaped endpoints.
+app.use("/api/pc/v1", createPcPortRouter(prisma));
 
 const httpServer = http.createServer(app);
 let matchmakingStarted = false;
