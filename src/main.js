@@ -239,9 +239,13 @@ app.get('/cloud/11/cloudservices/titles/gta5/ps4/0x1a098062.json', encryptDecryp
 //   res.send(file);
 // });
 
-//PC Tunables
-app.get('/cloud/11/cloudservices/titles/gta5/pcros/0x1a098062.json', (req, res) => {
-  res.redirect('http://prod.cloud.rockstargames.com/titles/gta5/pcros/0x1a098062.json');
+// PC tunables are deliberately not proxied to Rockstar production services.
+// A self-hosted deployment must supply its own compatible document before enabling this route.
+app.get('/cloud/11/cloudservices/titles/gta5/pcros/0x1a098062.json', (_req, res) => {
+  res.status(503).type("application/json").json({
+    error: "pc_tunables_unavailable",
+    message: "No independently supplied PC tunables document is configured for this server.",
+  });
 });
 
 app.get('/titles/gta5/ps2/0x1a098062.json', encryptDecryptMiddleware, (req, res) => {
