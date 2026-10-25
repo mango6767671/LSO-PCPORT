@@ -12,7 +12,7 @@
     "start": "node ./src/main.js",
     "start:bot": "node ./src/discordCommandBot.js",
     "test": "node --test",
-    "validate": "node --input-type=commonjs -e \"require('dotenv').config();const s=encodeURIComponent(process.env.SERVER_SECRET||'validation-only');process.env.POSTGRES_PRISMA_URL||='postgresql://lso:'+s+'@localhost:5432/lso?schema=public';process.env.POSTGRES_URL_NON_POOLING||=process.env.POSTGRES_PRISMA_URL;const r=require('child_process').spawnSync(process.execPath,['node_modules/prisma/build/index.js','validate'],{stdio:'inherit',env:process.env});process.exit(r.status??1)\" && node --check ./src/main.js && node --check ./src/discordCommandBot.js"
+    "validate": "node --input-type=commonjs -e \"require('dotenv').config();const s=encodeURIComponent(process.env.SERVER_SECRET||'validation-only');process.env.POSTGRES_PRISMA_URL||='postgresql://lso:'+s+'@localhost:5432/lso?schema=public';process.env.POSTGRES_URL_NON_POOLING||=process.env.POSTGRES_PRISMA_URL;const r=require('child_process').spawnSync(process.execPath,['node_modules/prisma/build/index.js','validate'],{stdio:'inherit',env:process.env});process.exit(r.status??1)\" && node --check ./src/main.js && node --check ./src/discordCommandBot.js && node --check ./src/pcPort/router.js && node --check ./src/pcPort/security.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.758.0",
